@@ -1,0 +1,167 @@
+/* ================================================================
+   DATA PRODUCT CATALOG — Custom Angular Material Theme
+   ================================================================
+   
+   Import this in your root styles.scss AFTER @angular/material theming.
+   
+   Uses Angular Material M3 theming API (Angular 18+).
+   Palette: Deep Navy primary (#1a1a2e) + Warm Gold accent (#c9a94e)
+   ================================================================ */
+
+@use '@angular/material' as mat;
+
+/* ── Define custom palettes ── */
+
+$catalog-primary: mat.m2-define-palette((
+  50:  #e8e8ec,
+  100: #c5c5d0,
+  200: #9e9eb3,
+  300: #777795,
+  400: #59597f,
+  500: #3a3a69,
+  600: #343461,
+  700: #2c2c56,
+  800: #25254c,
+  900: #1a1a2e,
+  A100: #7878ff,
+  A200: #4545ff,
+  A400: #1212ff,
+  A700: #0000f7,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: #fff,
+    400: #fff,
+    500: #fff,
+    600: #fff,
+    700: #fff,
+    800: #fff,
+    900: #fff,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: #fff,
+    A400: #fff,
+    A700: #fff,
+  )
+));
+
+$catalog-accent: mat.m2-define-palette((
+  50:  #f9f5e9,
+  100: #f0e5c8,
+  200: #e6d4a3,
+  300: #dcc27e,
+  400: #d5b563,
+  500: #c9a94e,
+  600: #c3a147,
+  700: #bc983d,
+  800: #b58f34,
+  900: #a07c2e,
+  A100: #fff2d6,
+  A200: #ffe3a3,
+  A400: #ffd470,
+  A700: #ffcc57,
+  contrast: (
+    50: rgba(0, 0, 0, 0.87),
+    100: rgba(0, 0, 0, 0.87),
+    200: rgba(0, 0, 0, 0.87),
+    300: rgba(0, 0, 0, 0.87),
+    400: rgba(0, 0, 0, 0.87),
+    500: rgba(0, 0, 0, 0.87),
+    600: rgba(0, 0, 0, 0.87),
+    700: rgba(0, 0, 0, 0.87),
+    800: rgba(0, 0, 0, 0.87),
+    900: #fff,
+    A100: rgba(0, 0, 0, 0.87),
+    A200: rgba(0, 0, 0, 0.87),
+    A400: rgba(0, 0, 0, 0.87),
+    A700: rgba(0, 0, 0, 0.87),
+  )
+));
+
+/* ── Create the theme ── */
+
+$catalog-theme: mat.m2-define-light-theme((
+  color: (
+    primary: $catalog-primary,
+    accent: $catalog-accent,
+  ),
+  typography: mat.m2-define-typography-config(
+    $font-family: "'DM Sans', sans-serif",
+  ),
+  density: -1,
+));
+
+@include mat.all-component-themes($catalog-theme);
+
+/* ================================================================
+   Global Overrides & Design Tokens
+   ================================================================ */
+
+:root {
+  /* Core palette */
+  --dp-navy-900: #1a1a2e;
+  --dp-navy-700: #2c2c56;
+  --dp-navy-500: #3a3a69;
+  --dp-gold-500: #c9a94e;
+  --dp-gold-700: #a07c2e;
+
+  /* Semantic colors */
+  --dp-healthy: #2a9d6e;
+  --dp-stable: #b58a2b;
+  --dp-stale: #c4553a;
+  --dp-published: #3a6abf;
+
+  /* Surfaces */
+  --dp-surface: #fafafa;
+  --dp-surface-raised: #ffffff;
+  --dp-surface-sunken: #f3f2ef;
+  --dp-border-light: rgba(0, 0, 0, 0.06);
+  --dp-border-medium: rgba(0, 0, 0, 0.1);
+
+  /* Text */
+  --dp-text-primary: #1a1a2e;
+  --dp-text-secondary: #6e6e82;
+  --dp-text-tertiary: #8c8c9b;
+  --dp-text-muted: #a0a0b0;
+
+  /* Typography */
+  --dp-font-body: 'DM Sans', sans-serif;
+  --dp-font-display: 'Instrument Serif', Georgia, serif;
+
+  /* Spacing */
+  --dp-page-gutter: 36px;
+  --dp-card-radius: 12px;
+  --dp-pill-radius: 6px;
+}
+
+/* ── Global typography import ── */
+/* Add to your index.html <head>:
+   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+*/
+
+/* ── MatDialog panel class ── */
+.product-detail-dialog {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-shape: 14px;
+    padding: 0;
+  }
+
+  .mat-mdc-dialog-surface {
+    overflow: hidden;
+  }
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
