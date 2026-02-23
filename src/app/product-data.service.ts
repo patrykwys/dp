@@ -7,7 +7,7 @@ export class ProductDataService {
   readonly products = signal<Product[]>([
     {
       id: 1,
-      name: 'Revenue Analytics Core',
+      name: 'RevenueAnalyticsCore_Customer_LifetimeValue_SupplyChainVelocity_WorkforcePlanningModel_MarketingAttribution_RiskExposureDashboard_ProductUsageTelemetry_FinancialCloseAccelerator',
       description:
         'Consolidated revenue streams across all business units with YoY growth metrics, margin analysis, and forecast accuracy tracking.',
       owner: 'Sarah Chen',
@@ -25,7 +25,7 @@ export class ProductDataService {
     },
     {
       id: 2,
-      name: 'Customer Lifetime Value',
+      name: 'Customer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime Value',
       description:
         'CLV computation engine combining transactional history, engagement scores, and churn probability for segmentation.',
       owner: 'Marcus Webb',

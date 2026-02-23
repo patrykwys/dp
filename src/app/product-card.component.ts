@@ -45,8 +45,13 @@ import { ShortDatePipe } from './short-date.pipe';
 
       <!-- Content -->
       <div class="card__content">
-        <h3 class="card__title">{{ product().name }}</h3>
-        <p class="card__description">{{ product().description }}</p>
+        <h3 class="card__title" [matTooltip]="product().name" matTooltipShowDelay="400">{{ product().name }}</h3>
+        <p
+          class="card__description"
+          [matTooltip]="product().description.length > 120 ? product().description.substring(0, 200) + '...' : ''"
+          matTooltipShowDelay="500"
+          matTooltipClass="card-tooltip"
+        >{{ product().description }}</p>
 
         <!-- Dates -->
         <div class="card__dates">
@@ -244,6 +249,8 @@ import { ShortDatePipe } from './short-date.pipe';
       flex: 1;
       display: flex;
       flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .card__title {
@@ -253,6 +260,12 @@ import { ShortDatePipe } from './short-date.pipe';
       color: #1a1a2e;
       line-height: 1.3;
       letter-spacing: -0.01em;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .card--certified .card__title {
@@ -268,7 +281,10 @@ import { ShortDatePipe } from './short-date.pipe';
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      overflow-wrap: break-word;
+      word-break: break-word;
       flex: 1;
+      min-height: 0;
     }
 
     /* ── Dates ── */
@@ -276,6 +292,8 @@ import { ShortDatePipe } from './short-date.pipe';
       display: flex;
       flex-direction: column;
       gap: 4px;
+      flex-shrink: 0;
+      margin-top: auto;
     }
 
     .card__date {
@@ -306,6 +324,7 @@ import { ShortDatePipe } from './short-date.pipe';
       justify-content: space-between;
       padding: 12px 18px;
       border-top: 1px solid rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
     }
 
     .card__owner {
