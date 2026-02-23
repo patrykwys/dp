@@ -72,7 +72,7 @@ import { ProductBadgeComponent } from './product-badge.component';
           [variant]="product().is_published ? 'published' : 'draft'"
           mode="inline"
         />
-        <!-- <app-health-indicator [product]="product()" /> -->
+        <app-health-indicator [product]="product()" />
         @if (product().has_extracts) {
           <app-product-badge variant="extract" mode="inline" />
         }
@@ -137,62 +137,81 @@ import { ProductBadgeComponent } from './product-badge.component';
               <div class="cert-grid">
                 <div
                   class="cert-track"
-                  [class.cert-track--passed]="product().is_certified_on_source"
+                  [class.cert-track-passed]="product().is_certified_on_source"
+                  [class.cert-track-failed]="!product().is_certified_on_source"
                 >
-                  <div class="cert-track__icon-wrapper">
-                    <mat-icon class="cert-track__icon">
+                  <div
+                    class="cert-track__icon-wrapper"
+                    [class.cert-track__icon-wrapper--green]="product().is_certified_on_source"
+                    [class.cert-track__icon-wrapper--red]="!product().is_certified_on_source"
+                  >
+                    <mat-icon
+                      class="cert-track__icon"
+                      [class.cert-track__icon--green]="product().is_certified_on_source"
+                      [class.cert-track__icon--red]="!product().is_certified_on_source"
+                    >
                       {{ product().is_certified_on_source ? 'check_circle' : 'cancel' }}
                     </mat-icon>
                   </div>
                   <span class="cert-track__title">Source</span>
-                  <span class="cert-track__status">
+                  <span
+                    class="cert-track__status"
+                    [class.cert-track__status--green]="product().is_certified_on_source"
+                    [class.cert-track__status--red]="!product().is_certified_on_source"
+                  >
                     {{ product().is_certified_on_source ? 'Certified' : 'Not Certified' }}
                   </span>
                 </div>
                 <div
                   class="cert-track"
-                  [class.cert-track--passed]="product().is_certified_on_bi_platform"
+                  [class.cert-track-passed]="product().is_certified_on_bi_platform"
+                  [class.cert-track-failed]="!product().is_certified_on_bi_platform"
                 >
-                  <div class="cert-track__icon-wrapper">
-                    <mat-icon class="cert-track__icon">
+                  <div
+                    class="cert-track__icon-wrapper"
+                    [class.cert-track__icon-wrapper--green]="product().is_certified_on_bi_platform"
+                    [class.cert-track__icon-wrapper--red]="!product().is_certified_on_bi_platform"
+                  >
+                    <mat-icon
+                      class="cert-track__icon"
+                      [class.cert-track__icon--green]="product().is_certified_on_bi_platform"
+                      [class.cert-track__icon--red]="!product().is_certified_on_bi_platform"
+                    >
                       {{ product().is_certified_on_bi_platform ? 'check_circle' : 'cancel' }}
                     </mat-icon>
                   </div>
                   <span class="cert-track__title">BI Platform</span>
-                  <span class="cert-track__status">
+                  <span
+                    class="cert-track__status"
+                    [class.cert-track__status--green]="product().is_certified_on_bi_platform"
+                    [class.cert-track__status--red]="!product().is_certified_on_bi_platform"
+                  >
                     {{ product().is_certified_on_bi_platform ? 'Certified' : 'Not Certified' }}
                   </span>
                 </div>
               </div>
             </section>
 
-            <!-- Lifecycle (improved) -->
+            <!-- Lifecycle -->
             <section class="section">
               <label class="section__label">Lifecycle</label>
               <div class="lifecycle">
-                <!-- Created -->
-                <div class="lifecycle__node">
-                  <div class="lifecycle__marker lifecycle__marker--start">
-                    <mat-icon class="lifecycle__marker-icon">rocket_launch</mat-icon>
-                  </div>
-                  <div class="lifecycle__rail"></div>
-                </div>
-                <div class="lifecycle__detail">
-                  <span class="lifecycle__event">Created</span>
-                  <span class="lifecycle__date">{{ product().product_createdAt | shortDate }}</span>
-                  <span class="lifecycle__age">{{ lifecycleAge() }} ago</span>
-                </div>
-
-                <!-- Updated -->
-                <div class="lifecycle__node">
-                  <div class="lifecycle__marker lifecycle__marker--end">
-                    <mat-icon class="lifecycle__marker-icon">sync</mat-icon>
+                <div class="lifecycle__item">
+                  <mat-icon class="lifecycle__icon">calendar_today</mat-icon>
+                  <div class="lifecycle__detail">
+                    <span class="lifecycle__label">Created</span>
+                    <span class="lifecycle__date">{{ product().product_createdAt | shortDate }}</span>
+                    <span class="lifecycle__age">{{ lifecycleAge() }} ago</span>
                   </div>
                 </div>
-                <div class="lifecycle__detail">
-                  <span class="lifecycle__event">Last Updated</span>
-                  <span class="lifecycle__date">{{ product().product_updatedAt | shortDate }}</span>
-                  <span class="lifecycle__age">{{ daysSinceUpdate() }}d ago</span>
+                <div class="lifecycle__divider"></div>
+                <div class="lifecycle__item">
+                  <mat-icon class="lifecycle__icon">update</mat-icon>
+                  <div class="lifecycle__detail">
+                    <span class="lifecycle__label">Last Updated</span>
+                    <span class="lifecycle__date">{{ product().product_updatedAt | shortDate }}</span>
+                    <span class="lifecycle__age">{{ daysSinceUpdate() }}d ago</span>
+                  </div>
                 </div>
               </div>
             </section>
@@ -594,132 +613,124 @@ import { ProductBadgeComponent } from './product-badge.component';
       background: #fff;
       border: 1px solid rgba(0, 0, 0, 0.05);
       text-align: center;
-
-      &--passed {
-        background: linear-gradient(168deg, #f0f9f4, #fafffe);
-        border-color: rgba(42, 157, 110, 0.15);
-
-        .cert-track__icon-wrapper {
-          background: rgba(42, 157, 110, 0.1);
-        }
-
-        .cert-track__icon {
-          color: #2a9d6e;
-        }
-
-        .cert-track__status {
-          color: #15803d;
-        }
-      }
-
-      &__icon-wrapper {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: rgba(196, 85, 58, 0.08);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      &__icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        color: #c4553a;
-      }
-
-      &__title {
-        font-size: 12px;
-        font-weight: 650;
-        color: #1a1a2e;
-        letter-spacing: 0.01em;
-      }
-
-      &__status {
-        font-size: 11px;
-        font-weight: 550;
-        color: #a0a0b0;
-      }
     }
 
-    /* ═══════════════════════════════════════
-       LIFECYCLE — Vertical timeline
-       ═══════════════════════════════════════ */
-    .lifecycle {
-      display: grid;
-      grid-template-columns: 48px 1fr;
-      gap: 0 14px;
+    .cert-track-passed {
+      background: linear-gradient(168deg, #f0f9f4, #fafffe);
+      border-color: rgba(42, 157, 110, 0.15);
     }
 
-    .lifecycle__node {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .cert-track-failed {
+      background: linear-gradient(168deg, #fef7f6, #fff);
+      border-color: rgba(196, 85, 58, 0.1);
     }
 
-    .lifecycle__marker {
-      width: 38px;
-      height: 38px;
+    .cert-track__icon-wrapper {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
-      position: relative;
-      z-index: 1;
-
-      &--start {
-        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-        border: 2px solid rgba(42, 157, 110, 0.25);
-      }
-
-      &--end {
-        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-        border: 2px solid rgba(58, 106, 191, 0.25);
-      }
     }
 
-    .lifecycle__marker-icon {
+    .cert-track__icon-wrapper--green {
+      background: rgba(42, 157, 110, 0.1);
+    }
+
+    .cert-track__icon-wrapper--red {
+      background: rgba(196, 85, 58, 0.08);
+    }
+
+    .cert-track__icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    .cert-track__icon--green {
+      color: #2a9d6e;
+    }
+
+    .cert-track__icon--red {
+      color: #c4553a;
+    }
+
+    .cert-track__title {
+      font-size: 12px;
+      font-weight: 650;
+      color: #1a1a2e;
+      letter-spacing: 0.01em;
+    }
+
+    .cert-track__status {
+      font-size: 11px;
+      font-weight: 550;
+    }
+
+    .cert-track__status--green {
+      color: #15803d;
+    }
+
+    .cert-track__status--red {
+      color: #c4553a;
+    }
+
+    /* ═══════════════════════════════════════
+       LIFECYCLE — Horizontal
+       ═══════════════════════════════════════ */
+    .lifecycle {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+
+    .lifecycle__item {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 16px;
+    }
+
+    .lifecycle__divider {
+      width: 1px;
+      background: rgba(0, 0, 0, 0.06);
+      flex-shrink: 0;
+    }
+
+    .lifecycle__icon {
       font-size: 18px;
       width: 18px;
       height: 18px;
-
-      .lifecycle__marker--start & {
-        color: #2a9d6e;
-      }
-
-      .lifecycle__marker--end & {
-        color: #3a6abf;
-      }
-    }
-
-    .lifecycle__rail {
-      width: 2px;
-      flex: 1;
-      min-height: 20px;
-      background: linear-gradient(180deg, rgba(42, 157, 110, 0.2), rgba(58, 106, 191, 0.2));
-      border-radius: 1px;
+      color: #b0b0c0;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
 
     .lifecycle__detail {
       display: flex;
       flex-direction: column;
-      padding: 6px 0 22px;
     }
 
-    .lifecycle__event {
-      font-size: 13.5px;
-      font-weight: 640;
-      color: #1a1a2e;
-      line-height: 1.2;
-      margin-bottom: 2px;
+    .lifecycle__label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #8c8c9b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 3px;
     }
 
     .lifecycle__date {
-      font-size: 13px;
-      font-weight: 500;
-      color: #3a3a52;
+      font-size: 13.5px;
+      font-weight: 620;
+      color: #1a1a2e;
+      line-height: 1.3;
     }
 
     .lifecycle__age {
