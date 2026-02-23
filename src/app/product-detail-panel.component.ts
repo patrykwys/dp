@@ -38,14 +38,19 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
             [alt]="product().name"
           />
           @if (product().is_certified_on_bi_platform) {
-            <span class="panel__cert-overlay">
-              <mat-icon class="panel__cert-overlay-icon">verified</mat-icon>
+            <span class="panel__image-badge panel__image-badge--certified">
+              <mat-icon class="panel__image-badge-icon">verified</mat-icon>
               Certified
+            </span>
+          } @else {
+            <span class="panel__image-badge panel__image-badge--uncertified">
+              <mat-icon class="panel__image-badge-icon">gpp_maybe</mat-icon>
+              Uncertified
             </span>
           }
         </div>
         <div class="panel__title-area">
-          <h2 class="panel__title">{{ product().name }}</h2>
+          <h2 class="panel__title" [matTooltip]="product().name" matTooltipShowDelay="400">{{ product().name }}</h2>
           <div class="panel__owner-row">
             <span class="panel__avatar">{{ initials() }}</span>
             <span class="panel__owner-name">{{ product().owner }}</span>
@@ -96,11 +101,11 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
               </div>
               <div class="metric-card">
                 <mat-icon class="metric-card__icon">storage</mat-icon>
-                <span class="metric-card__value">{{ formattedSize() }}</span>
+                <span class="metric-card__value">{{ product().size }}</span>
                 <span class="metric-card__label">Size</span>
               </div>
               <div class="metric-card">
-                <mat-icon class="metric-card__icon">calendar_today</mat-icon>
+                <mat-icon class="metric-card__icon">schedule</mat-icon>
                 <span class="metric-card__value">{{ daysSinceUpdate() }}d</span>
                 <span class="metric-card__label">Since Update</span>
               </div>
@@ -162,54 +167,34 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
               </div>
             </section>
 
-            <!-- Dates -->
+            <!-- Lifecycle (improved) -->
             <section class="section">
               <label class="section__label">Lifecycle</label>
-              <div class="date-row">
-                <div class="date-item">
-                  <mat-icon class="date-item__icon">event</mat-icon>
-                  <div class="date-item__content">
-                    <span class="date-item__label">Created</span>
-                    <span class="date-item__value">{{ product().product_createdAt | shortDate }}</span>
+              <div class="lifecycle">
+                <!-- Created -->
+                <div class="lifecycle__node">
+                  <div class="lifecycle__marker lifecycle__marker--start">
+                    <mat-icon class="lifecycle__marker-icon">rocket_launch</mat-icon>
                   </div>
+                  <div class="lifecycle__rail"></div>
                 </div>
-                <div class="date-row__connector"></div>
-                <div class="date-item">
-                  <mat-icon class="date-item__icon">update</mat-icon>
-                  <div class="date-item__content">
-                    <span class="date-item__label">Last Updated</span>
-                    <span class="date-item__value">{{ product().product_updatedAt | shortDate }}</span>
-                  </div>
+                <div class="lifecycle__detail">
+                  <span class="lifecycle__event">Created</span>
+                  <span class="lifecycle__date">{{ product().product_createdAt | shortDate }}</span>
+                  <span class="lifecycle__age">{{ lifecycleAge() }} ago</span>
                 </div>
-              </div>
-            </section>
 
-            <!-- Quick Links -->
-            <section class="section">
-              <label class="section__label">Links</label>
-              <div class="links-row">
-                <a
-                  class="link-btn"
-                  [href]="product().webPageUrl"
-                  target="_blank"
-                  rel="noopener"
-                  (click)="$event.stopPropagation()"
-                >
-                  <mat-icon class="link-btn__icon">language</mat-icon>
-                  <span class="link-btn__text">Web Page</span>
-                  <mat-icon class="link-btn__arrow">arrow_forward</mat-icon>
-                </a>
-                <a
-                  class="link-btn"
-                  [href]="product().content_url"
-                  target="_blank"
-                  rel="noopener"
-                  (click)="$event.stopPropagation()"
-                >
-                  <mat-icon class="link-btn__icon">dashboard</mat-icon>
-                  <span class="link-btn__text">View on Source</span>
-                  <mat-icon class="link-btn__arrow">arrow_forward</mat-icon>
-                </a>
+                <!-- Updated -->
+                <div class="lifecycle__node">
+                  <div class="lifecycle__marker lifecycle__marker--end">
+                    <mat-icon class="lifecycle__marker-icon">sync</mat-icon>
+                  </div>
+                </div>
+                <div class="lifecycle__detail">
+                  <span class="lifecycle__event">Last Updated</span>
+                  <span class="lifecycle__date">{{ product().product_updatedAt | shortDate }}</span>
+                  <span class="lifecycle__age">{{ daysSinceUpdate() }}d ago</span>
+                </div>
               </div>
             </section>
 
@@ -318,12 +303,15 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
       align-items: flex-start;
       gap: 16px;
       padding: 24px 24px 14px;
+      flex-shrink: 0;
+      max-height: 160px;
+      overflow: hidden;
     }
 
     .panel__image-wrapper {
       position: relative;
-      width: 110px;
-      height: 80px;
+      width: 180px;
+      height: 120px;
       border-radius: 10px;
       overflow: hidden;
       flex-shrink: 0;
@@ -338,7 +326,8 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
       display: block;
     }
 
-    .panel__cert-overlay {
+    /* Image badge — shared base */
+    .panel__image-badge {
       position: absolute;
       bottom: 0;
       left: 0;
@@ -346,28 +335,36 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 3px;
-      padding: 3px 0;
-      font-size: 9.5px;
+      gap: 4px;
+      padding: 4px 0;
+      font-size: 10.5px;
       font-weight: 650;
       color: #fff;
-      background: rgba(21, 128, 61, 0.85);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       letter-spacing: 0.03em;
       text-transform: uppercase;
     }
 
-    .panel__cert-overlay-icon {
-      font-size: 11px;
-      width: 11px;
-      height: 11px;
+    .panel__image-badge--certified {
+      background: rgba(21, 128, 61, 0.85);
+    }
+
+    .panel__image-badge--uncertified {
+      background: rgba(100, 100, 120, 0.78);
+    }
+
+    .panel__image-badge-icon {
+      font-size: 13px;
+      width: 13px;
+      height: 13px;
     }
 
     .panel__title-area {
       flex: 1;
       min-width: 0;
       padding-top: 2px;
+      overflow: hidden;
     }
 
     .panel__title {
@@ -377,6 +374,12 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
       color: #1a1a2e;
       font-family: 'Instrument Serif', Georgia, serif;
       line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .panel__owner-row {
@@ -686,112 +689,89 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
     }
 
     /* ═══════════════════════════════════════
-       DATE ROW (Timeline style)
+       LIFECYCLE — Vertical timeline
        ═══════════════════════════════════════ */
-    .date-row {
-      display: flex;
-      align-items: center;
-      gap: 0;
+    .lifecycle {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 0 14px;
     }
 
-    .date-item {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #fff;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-
-      &__icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: #b0b0c0;
-        flex-shrink: 0;
-      }
-
-      &__content {
-        display: flex;
-        flex-direction: column;
-      }
-
-      &__label {
-        font-size: 10.5px;
-        font-weight: 550;
-        color: #8c8c9b;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-      }
-
-      &__value {
-        font-size: 13.5px;
-        font-weight: 620;
-        color: #1a1a2e;
-      }
-    }
-
-    .date-row__connector {
-      width: 20px;
-      height: 2px;
-      background: rgba(0, 0, 0, 0.06);
-      flex-shrink: 0;
-    }
-
-    /* ═══════════════════════════════════════
-       QUICK LINKS
-       ═══════════════════════════════════════ */
-    .links-row {
+    .lifecycle__node {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      align-items: center;
     }
 
-    .link-btn {
+    .lifecycle__marker {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: #fff;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      text-decoration: none;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+
+      &--start {
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        border: 2px solid rgba(42, 157, 110, 0.25);
+      }
+
+      &--end {
+        background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        border: 2px solid rgba(58, 106, 191, 0.25);
+      }
+    }
+
+    .lifecycle__marker-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+
+      .lifecycle__marker--start & {
+        color: #2a9d6e;
+      }
+
+      .lifecycle__marker--end & {
+        color: #3a6abf;
+      }
+    }
+
+    .lifecycle__rail {
+      width: 2px;
+      flex: 1;
+      min-height: 20px;
+      background: linear-gradient(180deg, rgba(42, 157, 110, 0.2), rgba(58, 106, 191, 0.2));
+      border-radius: 1px;
+    }
+
+    .lifecycle__detail {
+      display: flex;
+      flex-direction: column;
+      padding: 6px 0 22px;
+    }
+
+    .lifecycle__event {
+      font-size: 13.5px;
+      font-weight: 640;
+      color: #1a1a2e;
+      line-height: 1.2;
+      margin-bottom: 2px;
+    }
+
+    .lifecycle__date {
+      font-size: 13px;
+      font-weight: 500;
       color: #3a3a52;
-      transition: all 0.15s ease;
-      cursor: pointer;
+    }
 
-      &:hover {
-        border-color: rgba(0, 0, 0, 0.12);
-        background: #fafafa;
-
-        .link-btn__arrow {
-          transform: translateX(3px);
-          color: #3a6abf;
-        }
-      }
-
-      &__icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: #8c8c9b;
-        flex-shrink: 0;
-      }
-
-      &__text {
-        flex: 1;
-        font-size: 13px;
-        font-weight: 550;
-      }
-
-      &__arrow {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-        color: #c0c0cc;
-        transition: all 0.2s ease;
-      }
+    .lifecycle__age {
+      font-size: 11.5px;
+      color: #8c8c9b;
+      font-weight: 450;
+      margin-top: 2px;
     }
   `,
 })
@@ -807,10 +787,7 @@ export class ProductDetailPanelComponent {
     this.utilService.daysSince(this.product().product_updatedAt)
   );
 
-  formattedSize = computed(() => {
-    const bytes = this.product().size;
-    if (bytes < 1_000_000) return `${(bytes / 1_000).toFixed(0)} KB`;
-    if (bytes < 1_000_000_000) return `${(bytes / 1_000_000).toFixed(0)} MB`;
-    return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
-  });
+  lifecycleAge = computed(() =>
+    this.utilService.getLifecycleAge(this.product().product_createdAt)
+  );
 }
