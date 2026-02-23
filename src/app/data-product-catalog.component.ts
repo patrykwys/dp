@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { ProductDataService } from './product-data.service';
 import { ProductUtilService } from './product-util.service';
 import { Product, ViewMode } from './product.model';
@@ -7,6 +8,7 @@ import { ProductCardComponent } from './product-card.component';
 import { ProductTableComponent } from './product-table.component';
 import { ProductExpansionListComponent } from './product-expansion-list.component';
 import { ProductDetailPanelComponent } from './product-detail-panel.component';
+import { ProductDetailDialogComponent } from './product-detail-dialog.component';
 import { ShortDatePipe } from './short-date.pipe';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
@@ -78,6 +80,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                 <app-product-card
                   [product]="product"
                   (selected)="selectedProduct.set($event)"
+                  (openInDialog)="openProductDialog($event)"
                 />
               }
             </div>
@@ -94,6 +97,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                 <app-product-card
                   [product]="product"
                   (selected)="selectedProduct.set($event)"
+                  (openInDialog)="openProductDialog($event)"
                 />
               }
             </div>
@@ -112,7 +116,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             </div>
             <app-product-expansion-list
               [products]="certifiedProducts()"
-              (openDetail)="selectedProduct.set($event)"
+              (openDetail)="openProductDialog($event)"
             />
           </section>
         }
@@ -124,7 +128,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             </div>
             <app-product-expansion-list
               [products]="uncertifiedProducts()"
-              (openDetail)="selectedProduct.set($event)"
+              (openDetail)="openProductDialog($event)"
             />
           </section>
         }
@@ -139,7 +143,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       }
     </div>
 
-    <!-- Detail Panel -->
+    <!-- Aside Panel (card click) -->
     @if (selectedProduct(); as product) {
       <app-product-detail-panel
         [product]="product"
@@ -286,14 +290,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, 320px);
+      gap: 16px;
     }
   `,
 })
 export class DataProductCatalogComponent {
   private dataService = inject(ProductDataService);
   private utilService = inject(ProductUtilService);
+  private dialog = inject(MatDialog);
 
   readonly today = new Date();
 
@@ -332,4 +337,16 @@ export class DataProductCatalogComponent {
     ...this.certifiedProducts(),
     ...this.uncertifiedProducts(),
   ]);
+
+  // ── Open product in MatDialog ──
+  openProductDialog(product: Product): void {
+    this.dialog.open(ProductDetailDialogComponent, {
+      data: product,
+      width: '720px',
+      maxWidth: '92vw',
+      maxHeight: '88vh',
+      panelClass: 'product-detail-dialog',
+      autoFocus: false,
+    });
+  }
 }

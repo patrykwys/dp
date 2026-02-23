@@ -139,6 +139,18 @@ $catalog-theme: mat.m2-define-light-theme((
    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
 */
 
+/* ── MatDialog panel class ── */
+.product-detail-dialog {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-shape: 14px;
+    padding: 0;
+  }
+
+  .mat-mdc-dialog-surface {
+    overflow: hidden;
+  }
+}
+
 /* ── Scrollbar styling ── */
 ::-webkit-scrollbar {
   width: 6px;
