@@ -10,6 +10,7 @@ import { HealthIndicatorComponent } from './health-indicator.component';
 import { SectionPlaceholderComponent } from './section-placeholder.component';
 import { ShortDatePipe } from './short-date.pipe';
 import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
+import { ProductBadgeComponent } from './product-badge.component';
 @Component({
   selector: 'app-product-detail-panel',
   standalone: true,
@@ -18,7 +19,7 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
-    StatusPillComponent,
+    ProductBadgeComponent,
     HealthIndicatorComponent,
     SectionPlaceholderComponent,
     ShortDatePipe,
@@ -38,15 +39,17 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
             [alt]="product().name"
           />
           @if (product().is_certified_on_bi_platform) {
-            <span class="panel__image-badge panel__image-badge--certified">
-              <mat-icon class="panel__image-badge-icon">verified</mat-icon>
-              Certified
-            </span>
+            <app-product-badge
+              class="panel__image-banner badge-image-banner"
+              variant="certified"
+              mode="overlay"
+            />
           } @else {
-            <span class="panel__image-badge panel__image-badge--uncertified">
-              <mat-icon class="panel__image-badge-icon">gpp_maybe</mat-icon>
-              Uncertified
-            </span>
+            <app-product-badge
+              class="panel__image-banner badge-image-banner"
+              variant="uncertified"
+              mode="overlay"
+            />
           }
         </div>
         <div class="panel__title-area">
@@ -65,17 +68,13 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
 
       <!-- Status Row -->
       <div class="panel__status-row">
-        <app-status-pill
-          [active]="product().is_published"
-          [label]="product().is_published ? 'Published' : 'Draft'"
-          [icon]="product().is_published ? '◉' : '◌'"
+        <app-product-badge
+          [variant]="product().is_published ? 'published' : 'draft'"
+          mode="inline"
         />
-        <app-health-indicator [product]="product()" />
+        <!-- <app-health-indicator [product]="product()" /> -->
         @if (product().has_extracts) {
-          <span class="panel__extract-pill">
-            <mat-icon class="panel__extract-pill-icon">downloading</mat-icon>
-            Extract
-          </span>
+          <app-product-badge variant="extract" mode="inline" />
         }
       </div>
 
@@ -326,38 +325,13 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
       display: block;
     }
 
-    /* Image badge — shared base */
-    .panel__image-badge {
+    /* Image banner positioning */
+    .panel__image-banner {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      padding: 4px 0;
-      font-size: 10.5px;
-      font-weight: 650;
-      color: #fff;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      letter-spacing: 0.03em;
-      text-transform: uppercase;
-    }
-
-    .panel__image-badge--certified {
-      background: rgba(21, 128, 61, 0.85);
-    }
-
-    .panel__image-badge--uncertified {
-      background: rgba(100, 100, 120, 0.78);
-    }
-
-    .panel__image-badge-icon {
-      font-size: 13px;
-      width: 13px;
-      height: 13px;
     }
 
     .panel__title-area {
@@ -430,25 +404,6 @@ import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
       padding: 0 24px 14px;
       flex-wrap: wrap;
       align-items: center;
-    }
-
-    .panel__extract-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11.5px;
-      font-weight: 550;
-      color: #6366f1;
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.12);
-    }
-
-    .panel__extract-pill-icon {
-      font-size: 14px;
-      width: 14px;
-      height: 14px;
     }
 
     /* ── Tabs ── */

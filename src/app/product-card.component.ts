@@ -5,12 +5,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Product } from './product.model';
 import { ProductUtilService } from './product-util.service';
 import { ShortDatePipe } from './short-date.pipe';
+import { ProductBadgeComponent } from './product-badge.component';
 
 
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [MatIconModule, MatButtonModule, MatTooltipModule, ShortDatePipe],
+  imports: [MatIconModule, MatButtonModule, MatTooltipModule, ProductBadgeComponent, ShortDatePipe],
   template: `
     <div
       class="card"
@@ -28,18 +29,19 @@ import { ShortDatePipe } from './short-date.pipe';
         />
         <div class="card__image-overlay"></div>
 
-        <!-- Certified Badge on image -->
-        @if (product().is_certified_on_bi_platform) {
-          <span class="card__cert-badge">
-            <mat-icon class="card__cert-badge-icon">verified</mat-icon>
-            Certified
-          </span>
-        } @else {
-          <span class="card__uncert-badge">Uncertified</span>
-        }
+        <!-- Certification Badge on image -->
+        <app-product-badge
+          class="card__badge-cert"
+          [variant]="product().is_certified_on_bi_platform ? 'certified' : 'uncertified'"
+          mode="overlay"
+        />
 
         @if (!product().is_published) {
-          <span class="card__draft-badge">Draft</span>
+          <app-product-badge
+            class="card__badge-draft"
+            variant="draft"
+            mode="overlay"
+          />
         }
       </div>
 
@@ -182,63 +184,17 @@ import { ShortDatePipe } from './short-date.pipe';
       pointer-events: none;
     }
 
-    /* ── Badges on Image ── */
-    .card__cert-badge {
+    /* ── Badge positioning on image ── */
+    .card__badge-cert {
       position: absolute;
       top: 10px;
       right: 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 5px 10px 5px 7px;
-      border-radius: 7px;
-      font-size: 11.5px;
-      font-weight: 650;
-      color: #fff;
-      background: rgba(21, 128, 61, 0.88);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      letter-spacing: 0.01em;
     }
 
-    .card__cert-badge-icon {
-      font-size: 15px;
-      width: 15px;
-      height: 15px;
-    }
-
-    .card__uncert-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 5px 10px;
-      border-radius: 7px;
-      font-size: 11px;
-      font-weight: 560;
-      color: rgba(255, 255, 255, 0.85);
-      background: rgba(80, 80, 100, 0.6);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
-
-    .card__draft-badge {
+    .card__badge-draft {
       position: absolute;
       top: 10px;
       left: 10px;
-      padding: 4px 9px;
-      border-radius: 6px;
-      font-size: 10.5px;
-      font-weight: 600;
-      color: #fff;
-      background: rgba(181, 138, 43, 0.85);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
     }
 
     /* ========================================

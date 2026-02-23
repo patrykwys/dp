@@ -10,6 +10,7 @@ import { StatusPillComponent } from './status-pill.component';
 import { HealthIndicatorComponent } from './health-indicator.component';
 import { SectionPlaceholderComponent } from './section-placeholder.component';
 import { ShortDatePipe } from './short-date.pipe';
+import { ProductBadgeComponent } from './product-badge.component';
 
 @Component({
   selector: 'app-product-detail-dialog',
@@ -20,7 +21,7 @@ import { ShortDatePipe } from './short-date.pipe';
     MatIconModule,
     MatButtonModule,
     MatDividerModule,
-    StatusPillComponent,
+    ProductBadgeComponent,
     HealthIndicatorComponent,
     SectionPlaceholderComponent,
     ShortDatePipe,
@@ -43,10 +44,11 @@ import { ShortDatePipe } from './short-date.pipe';
 
         <!-- Cert badge on banner -->
         @if (product.is_certified_on_bi_platform) {
-          <span class="dialog__banner-cert">
-            <mat-icon class="dialog__banner-cert-icon">verified</mat-icon>
-            Certified
-          </span>
+          <app-product-badge
+            class="dialog__badge-cert"
+            variant="certified"
+            mode="overlay"
+          />
         }
 
         <!-- Title overlaid on banner bottom -->
@@ -64,12 +66,11 @@ import { ShortDatePipe } from './short-date.pipe';
       <!-- Badges bar -->
       <div class="dialog__badges">
         @if (!product.is_certified_on_bi_platform) {
-          <span class="dialog__uncert-badge">Uncertified</span>
+          <app-product-badge variant="uncertified" mode="inline" />
         }
-        <app-status-pill
-          [active]="product.is_published"
-          [label]="product.is_published ? 'Published' : 'Draft'"
-          [icon]="product.is_published ? '◉' : '◌'"
+        <app-product-badge
+          [variant]="product.is_published ? 'published' : 'draft'"
+          mode="inline"
         />
         <app-health-indicator [product]="product" />
       </div>
@@ -215,29 +216,10 @@ import { ShortDatePipe } from './short-date.pipe';
       }
     }
 
-    .dialog__banner-cert {
+    .dialog__badge-cert {
       position: absolute;
       top: 12px;
       left: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 5px 11px 5px 7px;
-      border-radius: 7px;
-      font-size: 12px;
-      font-weight: 650;
-      color: #fff;
-      background: rgba(21, 128, 61, 0.88);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .dialog__banner-cert-icon {
-      font-size: 15px;
-      width: 15px;
-      height: 15px;
     }
 
     .dialog__banner-content {
@@ -301,16 +283,6 @@ import { ShortDatePipe } from './short-date.pipe';
       gap: 8px;
       padding: 14px 24px;
       flex-wrap: wrap;
-    }
-
-    .dialog__uncert-badge {
-      font-size: 11.5px;
-      font-weight: 550;
-      color: #a0a0b0;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background: rgba(140, 140, 155, 0.06);
-      border: 1px solid rgba(140, 140, 155, 0.08);
     }
 
     /* ── Tabs ── */
@@ -417,16 +389,6 @@ export class ProductDetailDialogComponent {
         date: p.product_updatedAt,
         subtitle: `${this.utilService.daysSince(p.product_updatedAt)}d ago`,
       },
-      // {
-      //   label: 'Registered',
-      //   date: p.createdAt,
-      //   subtitle: 'Catalog entry',
-      // },
-      // {
-      //   label: 'Catalog Updated',
-      //   date: p.updatedAt,
-      //   subtitle: 'Metadata sync',
-      // },
     ];
   });
 }
