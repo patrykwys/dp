@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Product } from './product.model';
+import { Product } from '../models/product.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductDataService {
@@ -7,7 +7,7 @@ export class ProductDataService {
   readonly products = signal<Product[]>([
     {
       id: 1,
-      name: 'RevenueAnalyticsCore_Customer_LifetimeValue_SupplyChainVelocity_WorkforcePlanningModel_MarketingAttribution_RiskExposureDashboard_ProductUsageTelemetry_FinancialCloseAccelerator',
+      name: 'Revenue Analytics Core',
       description:
         'Consolidated revenue streams across all business units with YoY growth metrics, margin analysis, and forecast accuracy tracking.',
       owner: 'Sarah Chen',
@@ -22,10 +22,15 @@ export class ProductDataService {
       size: 248_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/revenue-analytics-core',
       sourceDisplayName: 'Snowflake — ANALYTICS.REVENUE_V2',
+      connections: [
+        { id: 'c1-1', productId: '1', type: 'Snowflake', serverName: 'analytics-prod.snowflakecomputing.com', dbName: 'ANALYTICS', createdAt: new Date('2023-11-01'), updatedAt: new Date('2025-02-08') },
+        { id: 'c1-2', productId: '1', type: 'PostgreSQL', serverName: 'pg-replica-03.internal.corp', dbName: 'revenue_staging', createdAt: new Date('2024-03-10'), updatedAt: new Date('2025-01-20') },
+        { id: 'c1-3', productId: '1', type: 'Redshift', serverName: 'rs-cluster.us-east-1.redshift.amazonaws.com', dbName: 'finance_dw', createdAt: new Date('2024-06-15'), updatedAt: new Date('2025-02-01') },
+      ],
     },
     {
       id: 2,
-      name: 'Customer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime ValueCustomer Lifetime Value',
+      name: 'Customer Lifetime Value',
       description:
         'CLV computation engine combining transactional history, engagement scores, and churn probability for segmentation.',
       owner: 'Marcus Webb',
@@ -40,6 +45,10 @@ export class ProductDataService {
       size: 112_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/clv',
       sourceDisplayName: 'Snowflake — ANALYTICS.CLV_MASTER',
+      connections: [
+        { id: 'c2-1', productId: '2', type: 'Snowflake', serverName: 'analytics-prod.snowflakecomputing.com', dbName: 'CLV_MASTER', createdAt: new Date('2024-01-15'), updatedAt: new Date('2025-01-25') },
+        { id: 'c2-2', productId: '2', type: 'BigQuery', serverName: 'bq-analytics.gcp.internal', dbName: 'customer_events', createdAt: new Date('2024-04-20'), updatedAt: new Date('2025-01-10') },
+      ],
     },
     {
       id: 3,
@@ -58,6 +67,9 @@ export class ProductDataService {
       size: 67_500_000,
       webPageUrl: 'https://bi-hub.company.com/products/supply-chain-velocity',
       sourceDisplayName: 'Snowflake — OPS.SUPPLY_CHAIN_V1',
+      connections: [
+        { id: 'c3-1', productId: '3', type: 'Snowflake', serverName: 'ops-prod.snowflakecomputing.com', dbName: 'SUPPLY_CHAIN_V1', createdAt: new Date('2024-05-20'), updatedAt: new Date('2025-02-12') },
+      ],
     },
     {
       id: 4,
@@ -76,6 +88,10 @@ export class ProductDataService {
       size: 23_400_000,
       webPageUrl: 'https://bi-hub.company.com/products/workforce-planning',
       sourceDisplayName: 'Snowflake — HR.WORKFORCE_PLANNING',
+      connections: [
+        { id: 'c4-1', productId: '4', type: 'SQL Server', serverName: 'sql-hr-prod.corp.internal', dbName: 'HRAnalytics', createdAt: new Date('2024-08-12'), updatedAt: new Date('2025-02-14') },
+        { id: 'c4-2', productId: '4', type: 'Snowflake', serverName: 'hr-prod.snowflakecomputing.com', dbName: 'WORKFORCE_PLANNING', createdAt: new Date('2024-09-01'), updatedAt: new Date('2025-02-10') },
+      ],
     },
     {
       id: 5,
@@ -94,6 +110,12 @@ export class ProductDataService {
       size: 185_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/marketing-attribution',
       sourceDisplayName: 'Snowflake — MARKETING.ATTRIBUTION_MODEL',
+      connections: [
+        { id: 'c5-1', productId: '5', type: 'Snowflake', serverName: 'analytics-prod.snowflakecomputing.com', dbName: 'ATTRIBUTION_MODEL', createdAt: new Date('2024-02-28'), updatedAt: new Date('2025-01-30') },
+        { id: 'c5-2', productId: '5', type: 'MySQL', serverName: 'mysql-campaigns.marketing.internal', dbName: 'campaign_tracker', createdAt: new Date('2024-05-15'), updatedAt: new Date('2025-01-28') },
+        { id: 'c5-3', productId: '5', type: 'BigQuery', serverName: 'bq-marketing.gcp.internal', dbName: 'ad_platform_events', createdAt: new Date('2024-07-01'), updatedAt: new Date('2025-01-25') },
+        { id: 'c5-4', productId: '5', type: 'S3', serverName: 's3.us-east-1.amazonaws.com', dbName: 'mktg-raw-events-bucket', createdAt: new Date('2024-08-10'), updatedAt: new Date('2025-01-15') },
+      ],
     },
     {
       id: 6,
@@ -112,6 +134,10 @@ export class ProductDataService {
       size: 41_200_000,
       webPageUrl: 'https://bi-hub.company.com/products/risk-exposure',
       sourceDisplayName: 'Snowflake — RISK.EXPOSURE_REALTIME',
+      connections: [
+        { id: 'c6-1', productId: '6', type: 'Snowflake', serverName: 'risk-prod.snowflakecomputing.com', dbName: 'EXPOSURE_REALTIME', createdAt: new Date('2024-10-01'), updatedAt: new Date('2025-02-15') },
+        { id: 'c6-2', productId: '6', type: 'Oracle', serverName: 'ora-risk-01.finance.internal', dbName: 'RISK_CORE', createdAt: new Date('2024-10-15'), updatedAt: new Date('2025-02-10') },
+      ],
     },
     {
       id: 7,
@@ -130,6 +156,11 @@ export class ProductDataService {
       size: 320_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/usage-telemetry',
       sourceDisplayName: 'Snowflake — PRODUCT.TELEMETRY_EVENTS',
+      connections: [
+        { id: 'c7-1', productId: '7', type: 'Snowflake', serverName: 'product-prod.snowflakecomputing.com', dbName: 'TELEMETRY_EVENTS', createdAt: new Date('2024-04-10'), updatedAt: new Date('2025-02-09') },
+        { id: 'c7-2', productId: '7', type: 'ClickHouse', serverName: 'ch-analytics.product.internal', dbName: 'event_store', createdAt: new Date('2024-06-20'), updatedAt: new Date('2025-02-05') },
+        { id: 'c7-3', productId: '7', type: 'Kafka', serverName: 'kafka-prod.streaming.internal', dbName: 'telemetry-topic', createdAt: new Date('2024-08-01'), updatedAt: new Date('2025-02-09') },
+      ],
     },
     {
       id: 8,
@@ -148,6 +179,10 @@ export class ProductDataService {
       size: 156_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/financial-close',
       sourceDisplayName: 'Snowflake — FINANCE.RECONCILIATION_V3',
+      connections: [
+        { id: 'c8-1', productId: '8', type: 'Snowflake', serverName: 'finance-prod.snowflakecomputing.com', dbName: 'RECONCILIATION_V3', createdAt: new Date('2024-09-15'), updatedAt: new Date('2025-02-13') },
+        { id: 'c8-2', productId: '8', type: 'SQL Server', serverName: 'sql-erp-prod.finance.internal', dbName: 'GL_Transactions', createdAt: new Date('2024-10-01'), updatedAt: new Date('2025-02-12') },
+      ],
     },
   ]);
 }
