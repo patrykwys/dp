@@ -1,16 +1,15 @@
 import { Component, input, output, inject, computed, signal } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { Product, LifecycleEntry } from './product.model';
-import { ProductUtilService } from './product-util.service';
-import { StatusPillComponent } from './status-pill.component';
-import { HealthIndicatorComponent } from './health-indicator.component';
-import { SectionPlaceholderComponent } from './section-placeholder.component';
-import { ShortDatePipe } from './short-date.pipe';
-import { MatTooltip, MatTooltipModule } from '@angular/material/tooltip';
-import { ProductBadgeComponent } from './product-badge.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { Product } from '../../models/product.model';
+import { ProductUtilService } from '../../services/product-util.service';
+import { ProductBadgeComponent } from '../product-badge/product-badge.component';
+import { HealthIndicatorComponent } from '../health-indicator/health-indicator.component';
+import { SectionPlaceholderComponent } from '../section-placeholder/section-placeholder.component';
+import { ShortDatePipe } from '../../pipes/short-date.pipe';
+
 @Component({
   selector: 'app-product-detail-panel',
   standalone: true,
@@ -56,7 +55,7 @@ import { ProductBadgeComponent } from './product-badge.component';
           <h2 class="panel__title" [matTooltip]="product().name" matTooltipShowDelay="400">{{ product().name }}</h2>
           <div class="panel__owner-row">
             <span class="panel__avatar">{{ initials() }}</span>
-            <span class="panel__owner-name">{{ product().owner }}</span>
+            <span class="panel__owner-name" [matTooltip]="product().owner" matTooltipShowDelay="300">{{ product().owner }}</span>
             <span class="panel__owner-sep">·</span>
             <span class="panel__owner-role">Owner</span>
           </div>
@@ -229,11 +228,76 @@ import { ProductBadgeComponent } from './product-badge.component';
         <!-- Lineage -->
         <mat-tab label="Lineage">
           <div class="tab-content">
-            <app-section-placeholder
-              icon="🔀" title="Data Lineage"
-              subtitle="Upstream sources and transformation pipeline"
-              [items]="['Snowflake View', 'dbt Model', 'Raw Schema']"
-            />
+
+            <!-- Flow visualization -->
+            <div class="flow">
+              <!-- Source label -->
+              <div class="flow__label">
+                <mat-icon class="flow__label-icon">cloud_upload</mat-icon>
+                <span class="flow__label-text">{{ product().connections.length }} upstream {{ product().connections.length === 1 ? 'source' : 'sources' }}</span>
+              </div>
+
+              <!-- Source nodes -->
+              <div class="flow__sources">
+                @for (conn of product().connections; track conn.id; let i = $index) {
+                  <div class="flow__node" [class.flow__node--expanded]="expandedConn() === conn.id" (click)="toggleConn(conn.id)">
+                    <div class="flow__node-bar" [style.background]="getConnColor(conn.type)"></div>
+                    <div class="flow__node-body">
+                      <div class="flow__node-header">
+                        <span class="flow__node-type" [style.color]="getConnColor(conn.type)">{{ conn.type }}</span>
+                        <span class="flow__node-db">{{ conn.dbName }}</span>
+                        <mat-icon class="flow__node-chevron">{{ expandedConn() === conn.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+                      </div>
+                      @if (expandedConn() === conn.id) {
+                        <div class="flow__node-detail">
+                          <div class="flow__node-row">
+                            <mat-icon class="flow__node-row-icon">dns</mat-icon>
+                            <span class="flow__node-row-text">{{ conn.serverName }}</span>
+                          </div>
+                          <div class="flow__node-dates">
+                            <span class="flow__node-date">
+                              <mat-icon class="flow__node-date-icon">calendar_today</mat-icon>
+                              {{ conn.createdAt | shortDate }}
+                            </span>
+                            <span class="flow__node-date">
+                              <mat-icon class="flow__node-date-icon">update</mat-icon>
+                              {{ conn.updatedAt | shortDate }}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              @if (product().connections.length === 0) {
+                <div class="flow__empty">
+                  <mat-icon class="flow__empty-icon">link_off</mat-icon>
+                  <span class="flow__empty-text">No connections found</span>
+                </div>
+              }
+
+              <!-- Converge arrow -->
+              @if (product().connections.length > 0) {
+                <div class="flow__pipe">
+                  <div class="flow__pipe-line"></div>
+                  <mat-icon class="flow__pipe-arrow">arrow_downward</mat-icon>
+                  <div class="flow__pipe-line"></div>
+                </div>
+
+                <!-- Destination node -->
+                <div class="flow__destination">
+                  <mat-icon class="flow__destination-icon">hub</mat-icon>
+                  <div class="flow__destination-info">
+                    <span class="flow__destination-name">{{ product().name }}</span>
+                    <span class="flow__destination-sub">This product</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Future placeholder -->
             <app-section-placeholder
               icon="🏷️" title="Metadata & Schema"
               subtitle="Column definitions, data types, freshness SLAs"
@@ -385,6 +449,8 @@ import { ProductBadgeComponent } from './product-badge.component';
     .panel__avatar {
       width: 22px;
       height: 22px;
+      min-width: 22px;
+      min-height: 22px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3a3a5c, #5a5a7e);
       display: inline-flex;
@@ -393,11 +459,16 @@ import { ProductBadgeComponent } from './product-badge.component';
       color: #fff;
       font-size: 9px;
       font-weight: 700;
+      flex-shrink: 0;
     }
 
     .panel__owner-name {
       font-weight: 560;
       color: #3a3a52;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 260px;
     }
 
     .panel__owner-sep {
@@ -739,6 +810,246 @@ import { ProductBadgeComponent } from './product-badge.component';
       font-weight: 450;
       margin-top: 2px;
     }
+
+    /* ═══════════════════════════════════════
+       FLOW / PIPELINE
+       ═══════════════════════════════════════ */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .flow__label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .flow__label-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: #8c8c9b;
+    }
+
+    .flow__label-text {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #8c8c9b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Source nodes container */
+    .flow__sources {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Individual node */
+    .flow__node {
+      display: flex;
+      border-radius: 9px;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .flow__node:hover {
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .flow__node--expanded {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .flow__node-bar {
+      width: 4px;
+      flex-shrink: 0;
+    }
+
+    .flow__node-body {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 14px;
+    }
+
+    .flow__node-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .flow__node-type {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      flex-shrink: 0;
+    }
+
+    .flow__node-db {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a2e;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .flow__node-chevron {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #c0c0cc;
+      flex-shrink: 0;
+      transition: color 0.15s ease;
+    }
+
+    .flow__node:hover .flow__node-chevron {
+      color: #8c8c9b;
+    }
+
+    /* Expanded detail */
+    .flow__node-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 10px;
+      margin-top: 10px;
+      border-top: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .flow__node-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flow__node-row-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+      color: #b0b0c0;
+      flex-shrink: 0;
+    }
+
+    .flow__node-row-text {
+      font-size: 12px;
+      color: #6e6e82;
+      font-weight: 450;
+      overflow-wrap: break-word;
+      word-break: break-all;
+    }
+
+    .flow__node-dates {
+      display: flex;
+      gap: 16px;
+    }
+
+    .flow__node-date {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      color: #8c8c9b;
+      font-weight: 450;
+    }
+
+    .flow__node-date-icon {
+      font-size: 13px;
+      width: 13px;
+      height: 13px;
+      color: #c0c0cc;
+    }
+
+    /* Pipe / converge */
+    .flow__pipe {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .flow__pipe-line {
+      width: 2px;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    .flow__pipe-arrow {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #b0b0c0;
+    }
+
+    /* Destination */
+    .flow__destination {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1a1a2e, #2a2a48);
+      color: #fff;
+    }
+
+    .flow__destination-icon {
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+      color: rgba(255, 255, 255, 0.7);
+      flex-shrink: 0;
+    }
+
+    .flow__destination-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .flow__destination-name {
+      font-size: 13.5px;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .flow__destination-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 450;
+    }
+
+    /* Empty state */
+    .flow__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 32px 16px;
+      color: #b0b0c0;
+    }
+
+    .flow__empty-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+    }
+
+    .flow__empty-text {
+      font-size: 13px;
+      font-weight: 500;
+    }
   `,
 })
 export class ProductDetailPanelComponent {
@@ -746,6 +1057,8 @@ export class ProductDetailPanelComponent {
 
   product = input.required<Product>();
   closed = output<void>();
+
+  expandedConn = signal<string | null>(null);
 
   initials = computed(() => this.utilService.getOwnerInitials(this.product().owner));
 
@@ -756,4 +1069,25 @@ export class ProductDetailPanelComponent {
   lifecycleAge = computed(() =>
     this.utilService.getLifecycleAge(this.product().product_createdAt)
   );
+
+  toggleConn(id: string): void {
+    this.expandedConn.update(current => current === id ? null : id);
+  }
+
+  private readonly connColors: Record<string, string> = {
+    Snowflake: '#29b5e8',
+    PostgreSQL: '#336791',
+    BigQuery: '#4285f4',
+    Redshift: '#e05d44',
+    MySQL: '#f29111',
+    'SQL Server': '#cc2927',
+    Oracle: '#f80000',
+    ClickHouse: '#d4a017',
+    Kafka: '#6e6e82',
+    S3: '#e25d34',
+  };
+
+  getConnColor(type: string): string {
+    return this.connColors[type] ?? '#6366f1';
+  }
 }
