@@ -1,9 +1,9 @@
 import { Injectable, signal } from '@angular/core';
-import { Product } from '../models/product.model';
+import { Product } from './product.model';
 
 @Injectable({ providedIn: 'root' })
 export class ProductDataService {
-
+ 
   readonly products = signal<Product[]>([
     {
       id: 1,
@@ -22,6 +22,7 @@ export class ProductDataService {
       size: 248_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/revenue-analytics-core',
       sourceDisplayName: 'Snowflake — ANALYTICS.REVENUE_V2',
+      sp21Classification: 'Confidential' as const,
       connections: [
         { id: 'c1-1', productId: '1', type: 'Snowflake', serverName: 'analytics-prod.snowflakecomputing.com', dbName: 'ANALYTICS', createdAt: new Date('2023-11-01'), updatedAt: new Date('2025-02-08') },
         { id: 'c1-2', productId: '1', type: 'PostgreSQL', serverName: 'pg-replica-03.internal.corp', dbName: 'revenue_staging', createdAt: new Date('2024-03-10'), updatedAt: new Date('2025-01-20') },
@@ -45,6 +46,7 @@ export class ProductDataService {
       size: 112_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/clv',
       sourceDisplayName: 'Snowflake — ANALYTICS.CLV_MASTER',
+      sp21Classification: 'Internal' as const,
       connections: [
         { id: 'c2-1', productId: '2', type: 'Snowflake', serverName: 'analytics-prod.snowflakecomputing.com', dbName: 'CLV_MASTER', createdAt: new Date('2024-01-15'), updatedAt: new Date('2025-01-25') },
         { id: 'c2-2', productId: '2', type: 'BigQuery', serverName: 'bq-analytics.gcp.internal', dbName: 'customer_events', createdAt: new Date('2024-04-20'), updatedAt: new Date('2025-01-10') },
@@ -67,6 +69,7 @@ export class ProductDataService {
       size: 67_500_000,
       webPageUrl: 'https://bi-hub.company.com/products/supply-chain-velocity',
       sourceDisplayName: 'Snowflake — OPS.SUPPLY_CHAIN_V1',
+      sp21Classification: 'Public' as const,
       connections: [
         { id: 'c3-1', productId: '3', type: 'Snowflake', serverName: 'ops-prod.snowflakecomputing.com', dbName: 'SUPPLY_CHAIN_V1', createdAt: new Date('2024-05-20'), updatedAt: new Date('2025-02-12') },
       ],
@@ -88,6 +91,7 @@ export class ProductDataService {
       size: 23_400_000,
       webPageUrl: 'https://bi-hub.company.com/products/workforce-planning',
       sourceDisplayName: 'Snowflake — HR.WORKFORCE_PLANNING',
+      sp21Classification: 'Highly Confidential' as const,
       connections: [
         { id: 'c4-1', productId: '4', type: 'SQL Server', serverName: 'sql-hr-prod.corp.internal', dbName: 'HRAnalytics', createdAt: new Date('2024-08-12'), updatedAt: new Date('2025-02-14') },
         { id: 'c4-2', productId: '4', type: 'Snowflake', serverName: 'hr-prod.snowflakecomputing.com', dbName: 'WORKFORCE_PLANNING', createdAt: new Date('2024-09-01'), updatedAt: new Date('2025-02-10') },
@@ -110,6 +114,7 @@ export class ProductDataService {
       size: 185_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/marketing-attribution',
       sourceDisplayName: 'Snowflake — MARKETING.ATTRIBUTION_MODEL',
+      sp21Classification: 'Confidential' as const,
       connections: [
         { id: 'c5-1', productId: '5', type: 'Snowflake', serverName: 'analytics-prod.snowflakecomputing.com', dbName: 'ATTRIBUTION_MODEL', createdAt: new Date('2024-02-28'), updatedAt: new Date('2025-01-30') },
         { id: 'c5-2', productId: '5', type: 'MySQL', serverName: 'mysql-campaigns.marketing.internal', dbName: 'campaign_tracker', createdAt: new Date('2024-05-15'), updatedAt: new Date('2025-01-28') },
@@ -134,6 +139,7 @@ export class ProductDataService {
       size: 41_200_000,
       webPageUrl: 'https://bi-hub.company.com/products/risk-exposure',
       sourceDisplayName: 'Snowflake — RISK.EXPOSURE_REALTIME',
+      sp21Classification: 'Highly Confidential' as const,
       connections: [
         { id: 'c6-1', productId: '6', type: 'Snowflake', serverName: 'risk-prod.snowflakecomputing.com', dbName: 'EXPOSURE_REALTIME', createdAt: new Date('2024-10-01'), updatedAt: new Date('2025-02-15') },
         { id: 'c6-2', productId: '6', type: 'Oracle', serverName: 'ora-risk-01.finance.internal', dbName: 'RISK_CORE', createdAt: new Date('2024-10-15'), updatedAt: new Date('2025-02-10') },
@@ -156,6 +162,7 @@ export class ProductDataService {
       size: 320_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/usage-telemetry',
       sourceDisplayName: 'Snowflake — PRODUCT.TELEMETRY_EVENTS',
+      sp21Classification: 'Internal' as const,
       connections: [
         { id: 'c7-1', productId: '7', type: 'Snowflake', serverName: 'product-prod.snowflakecomputing.com', dbName: 'TELEMETRY_EVENTS', createdAt: new Date('2024-04-10'), updatedAt: new Date('2025-02-09') },
         { id: 'c7-2', productId: '7', type: 'ClickHouse', serverName: 'ch-analytics.product.internal', dbName: 'event_store', createdAt: new Date('2024-06-20'), updatedAt: new Date('2025-02-05') },
@@ -179,6 +186,7 @@ export class ProductDataService {
       size: 156_000_000,
       webPageUrl: 'https://bi-hub.company.com/products/financial-close',
       sourceDisplayName: 'Snowflake — FINANCE.RECONCILIATION_V3',
+      sp21Classification: 'Confidential' as const,
       connections: [
         { id: 'c8-1', productId: '8', type: 'Snowflake', serverName: 'finance-prod.snowflakecomputing.com', dbName: 'RECONCILIATION_V3', createdAt: new Date('2024-09-15'), updatedAt: new Date('2025-02-13') },
         { id: 'c8-2', productId: '8', type: 'SQL Server', serverName: 'sql-erp-prod.finance.internal', dbName: 'GL_Transactions', createdAt: new Date('2024-10-01'), updatedAt: new Date('2025-02-12') },

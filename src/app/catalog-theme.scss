@@ -151,6 +151,32 @@ $catalog-theme: mat.m2-define-light-theme((
   }
 }
 
+.certification-status-dialog {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-shape: 10px;
+    padding: 0;
+  }
+
+  .mat-mdc-dialog-surface {
+    overflow: hidden;
+  }
+
+  .mat-mdc-dialog-title {
+    padding: 0;
+    margin: 0;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .mat-mdc-dialog-content {
+    padding: 0;
+    margin: 0;
+    max-height: 70vh;
+  }
+}
+
 /* ── Scrollbar styling ── */
 ::-webkit-scrollbar {
   width: 6px;

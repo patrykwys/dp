@@ -81,16 +81,6 @@ import { ShortDatePipe } from './short-date.pipe';
                     <span class="detail-card__value">{{ product.product_updatedAt | shortDate }}</span>
                     <span class="detail-card__sub">{{ getDaysSince(product.product_updatedAt) }}d ago</span>
                   </div>
-                  <div class="detail-card">
-                    <span class="detail-card__key">Registered</span>
-                    <span class="detail-card__value">{{ product.createdAt | shortDate }}</span>
-                    <span class="detail-card__sub">Catalog entry</span>
-                  </div>
-                  <div class="detail-card">
-                    <span class="detail-card__key">Catalog Updated</span>
-                    <span class="detail-card__value">{{ product.updatedAt | shortDate }}</span>
-                    <span class="detail-card__sub">Metadata sync</span>
-                  </div>
                 </div>
               </div>
 

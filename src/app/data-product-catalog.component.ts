@@ -13,6 +13,7 @@ import { ShortDatePipe } from './short-date.pipe';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { CertificationStatusDialogComponent } from './CertificationStatusDialog.component';
 
 @Component({
   selector: 'app-data-product-catalog',
@@ -40,7 +41,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       </div>
       <div class="top-bar__right">
         <span class="top-bar__sync">Last sync: {{ today | shortDate }}</span>
-
+ 
         <!-- 3-way View Toggle -->
         <mat-button-toggle-group
           class="view-toggle"
@@ -59,13 +60,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         </mat-button-toggle-group>
       </div>
     </header>
-
+ 
     <!-- Stats -->
     <app-stats-strip [stats]="stats()" />
-
+ 
     <!-- Content -->
     <div class="content">
-
+ 
       <!-- ─── Grid View ─── -->
       @if (viewMode() === 'grid') {
         @if (certifiedProducts().length) {
@@ -81,6 +82,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                   [product]="product"
                   (selected)="selectedProduct.set($event)"
                   (openInDialog)="openProductDialog($event)"
+                  (openCertStatus)="openCertStatusDialog($event)"
                 />
               }
             </div>
@@ -98,13 +100,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                   [product]="product"
                   (selected)="selectedProduct.set($event)"
                   (openInDialog)="openProductDialog($event)"
+                  (openCertStatus)="openCertStatusDialog($event)"
                 />
               }
             </div>
           </section>
         }
       }
-
+ 
       <!-- ─── Expansion Panel View ─── -->
       @if (viewMode() === 'expansion') {
         @if (certifiedProducts().length) {
@@ -133,7 +136,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
           </section>
         }
       }
-
+ 
       <!-- ─── Table View ─── -->
       @if (viewMode() === 'table') {
         <app-product-table
@@ -142,7 +145,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         />
       }
     </div>
-
+ 
     <!-- Aside Panel (card click) -->
     @if (selectedProduct(); as product) {
       <app-product-detail-panel
@@ -158,7 +161,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       background: #f3f2ef;
       font-family: 'DM Sans', sans-serif;
     }
-
+ 
     /* ---------- Top Bar ---------- */
     .top-bar {
       background: #1a1a2e;
@@ -166,13 +169,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       display: flex;
       align-items: center;
       justify-content: space-between;
-
+ 
       &__left {
         display: flex;
         align-items: center;
         gap: 14px;
       }
-
+ 
       &__logo {
         width: 34px;
         height: 34px;
@@ -185,7 +188,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         font-weight: 700;
         color: #1a1a2e;
       }
-
+ 
       &__title {
         margin: 0;
         font-size: 18px;
@@ -194,26 +197,26 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         font-family: 'Instrument Serif', Georgia, serif;
         letter-spacing: 0.01em;
       }
-
+ 
       &__subtitle {
         margin: 0;
         font-size: 11.5px;
         color: rgba(255, 255, 255, 0.45);
         font-weight: 400;
       }
-
+ 
       &__right {
         display: flex;
         align-items: center;
         gap: 16px;
       }
-
+ 
       &__sync {
         font-size: 12px;
         color: rgba(255, 255, 255, 0.4);
       }
     }
-
+ 
     .view-toggle {
       --mat-standard-button-toggle-height: 34px;
       --mat-standard-button-toggle-shape: 7px;
@@ -222,57 +225,57 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       --mat-standard-button-toggle-text-color: rgba(255, 255, 255, 0.35);
       --mat-standard-button-toggle-background-color: transparent;
       --mat-standard-button-toggle-divider-color: rgba(255, 255, 255, 0.1);
-
+ 
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 8px;
       overflow: hidden;
-
+ 
       mat-icon {
         font-size: 18px;
         width: 18px;
         height: 18px;
       }
     }
-
+ 
     /* ---------- Content ---------- */
     .content {
       padding: 24px 36px 36px;
     }
-
+ 
     /* ---------- Section Grouping ---------- */
     .product-section {
       margin-bottom: 32px;
-
+ 
       &--uncertified {
         opacity: 0.85;
       }
     }
-
+ 
     .section-header {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 16px;
-
+ 
       &__accent {
         width: 4px;
         height: 18px;
         border-radius: 2px;
         background: linear-gradient(180deg, #c9a94e, #a07c2e);
       }
-
+ 
       &__label {
         font-size: 14px;
         font-weight: 650;
         color: #1a1a2e;
         letter-spacing: 0.01em;
-
+ 
         &--muted {
           color: #8c8c9b;
           font-weight: 550;
         }
       }
-
+ 
       &__count {
         font-size: 12px;
         font-weight: 600;
@@ -280,14 +283,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         background: rgba(201, 169, 78, 0.1);
         padding: 2px 8px;
         border-radius: 10px;
-
+ 
         &--muted {
           color: #8c8c9b;
           background: rgba(140, 140, 155, 0.08);
         }
       }
     }
-
+ 
     .card-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, 320px);
@@ -299,13 +302,13 @@ export class DataProductCatalogComponent {
   private dataService = inject(ProductDataService);
   private utilService = inject(ProductUtilService);
   private dialog = inject(MatDialog);
-
+ 
   readonly today = new Date();
-
+ 
   // ── State Signals ──
   readonly viewMode = signal<ViewMode>('grid');
   readonly selectedProduct = signal<Product | null>(null);
-
+ 
   // ── Computed: Stats ──
   readonly stats = computed<CatalogStats>(() => {
     const products = this.dataService.products();
@@ -316,7 +319,7 @@ export class DataProductCatalogComponent {
       healthy: products.filter((p) => this.utilService.getHealthStatus(p).label === 'Healthy').length,
     };
   });
-
+ 
   // ── Computed: Grouped Products ──
   readonly certifiedProducts = computed(() =>
     this.dataService
@@ -324,20 +327,20 @@ export class DataProductCatalogComponent {
       .filter((p) => p.is_certified_on_bi_platform)
       .sort((a, b) => a.name.localeCompare(b.name))
   );
-
+ 
   readonly uncertifiedProducts = computed(() =>
     this.dataService
       .products()
       .filter((p) => !p.is_certified_on_bi_platform)
       .sort((a, b) => a.name.localeCompare(b.name))
   );
-
+ 
   // ── Computed: For table view (certified first, then uncertified) ──
   readonly sortedProducts = computed(() => [
     ...this.certifiedProducts(),
     ...this.uncertifiedProducts(),
   ]);
-
+ 
   // ── Open product in MatDialog ──
   openProductDialog(product: Product): void {
     this.dialog.open(ProductDetailDialogComponent, {
@@ -346,6 +349,18 @@ export class DataProductCatalogComponent {
       maxWidth: '92vw',
       maxHeight: '88vh',
       panelClass: 'product-detail-dialog',
+      autoFocus: false,
+    });
+  }
+ 
+  // ── Open certification status dialog ──
+  openCertStatusDialog(product: Product): void {
+    this.dialog.open(CertificationStatusDialogComponent, {
+      data: product,
+      width: '520px',
+      maxWidth: '92vw',
+      maxHeight: '80vh',
+      panelClass: 'certification-status-dialog',
       autoFocus: false,
     });
   }

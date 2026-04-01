@@ -5,7 +5,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Product } from './product.model';
 import { ProductUtilService } from './product-util.service';
 import { ShortDatePipe } from './short-date.pipe';
-import { ProductBadgeComponent } from './product-badge.component';
+import { BadgeVariant, ProductBadgeComponent } from './product-badge.component';
 
 
 @Component({
@@ -28,14 +28,15 @@ import { ProductBadgeComponent } from './product-badge.component';
           loading="lazy"
         />
         <div class="card__image-overlay"></div>
-
+ 
         <!-- Certification Badge on image -->
         <app-product-badge
-          class="card__badge-cert"
+          class="card__badge-cert card__badge-cert--clickable"
           [variant]="product().is_certified_on_bi_platform ? 'certified' : 'uncertified'"
           mode="overlay"
+          (click)="onCertBadgeClick($event)"
         />
-
+ 
         @if (!product().is_published) {
           <app-product-badge
             class="card__badge-draft"
@@ -44,7 +45,7 @@ import { ProductBadgeComponent } from './product-badge.component';
           />
         }
       </div>
-
+ 
       <!-- Content -->
       <div class="card__content">
         <h3 class="card__title" [matTooltip]="product().name" matTooltipShowDelay="400">{{ product().name }}</h3>
@@ -54,7 +55,14 @@ import { ProductBadgeComponent } from './product-badge.component';
           matTooltipShowDelay="500"
           matTooltipClass="card-tooltip"
         >{{ product().description }}</p>
-
+ 
+        <!-- SP21 Classification -->
+        <app-product-badge
+          class="card__sp21"
+          [variant]="sp21Variant()"
+          mode="inline"
+        />
+ 
         <!-- Dates -->
         <div class="card__dates">
           <div class="card__date">
@@ -71,17 +79,17 @@ import { ProductBadgeComponent } from './product-badge.component';
           </div>
         </div>
       </div>
-
+ 
       <!-- Footer -->
       <div class="card__footer">
         <div class="card__owner">
           <span class="card__avatar">{{ initials() }}</span>
           <div class="card__owner-info">
-            <span class="card__owner-name">{{ product().owner }}</span>
+            <span class="card__owner-name" [matTooltip]="product().owner" matTooltipShowDelay="300">{{ product().owner }}</span>
             <span class="card__owner-role">Owner</span>
           </div>
         </div>
-
+ 
         <button
           mat-icon-button
           class="card__dialog-btn"
@@ -109,51 +117,51 @@ import { ProductBadgeComponent } from './product-badge.component';
       border: 1px solid rgba(0, 0, 0, 0.07);
       width: 320px;
       height: 420px;
-
+ 
       &:hover {
         transform: translateY(-3px);
         box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08);
-
+ 
         .card__image {
           transform: scale(1.03);
         }
-
+ 
         .card__dialog-btn {
           opacity: 1;
         }
       }
-
+ 
       /* ── Certified ── */
       &--certified {
         border-color: rgba(42, 157, 110, 0.18);
         background: linear-gradient(180deg, #fff 0%, #f7fdf9 100%);
-
+ 
         &:hover {
           border-color: rgba(42, 157, 110, 0.3);
           box-shadow:
             0 12px 36px rgba(42, 157, 110, 0.08),
             0 0 0 1px rgba(42, 157, 110, 0.06);
         }
-
+ 
         .card__footer {
           border-top-color: rgba(42, 157, 110, 0.08);
         }
-
+ 
         .card__avatar {
           background: linear-gradient(135deg, #15803d, #22c55e);
         }
-
+ 
         .card__dialog-btn {
           color: #2a9d6e;
           &:hover { background: rgba(42, 157, 110, 0.08); }
         }
       }
-
+ 
       &--draft {
         opacity: 0.88;
       }
     }
-
+ 
     /* ========================================
        IMAGE
        ======================================== */
@@ -164,7 +172,7 @@ import { ProductBadgeComponent } from './product-badge.component';
       overflow: hidden;
       flex-shrink: 0;
     }
-
+ 
     .card__image {
       width: 100%;
       height: 100%;
@@ -172,7 +180,7 @@ import { ProductBadgeComponent } from './product-badge.component';
       display: block;
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
+ 
     .card__image-overlay {
       position: absolute;
       inset: 0;
@@ -183,20 +191,29 @@ import { ProductBadgeComponent } from './product-badge.component';
       );
       pointer-events: none;
     }
-
+ 
     /* ── Badge positioning on image ── */
     .card__badge-cert {
       position: absolute;
       top: 10px;
       right: 10px;
     }
-
+ 
+    .card__badge-cert--clickable {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+ 
+    .card__badge-cert--clickable:hover {
+      transform: scale(1.05);
+    }
+ 
     .card__badge-draft {
       position: absolute;
       top: 10px;
       left: 10px;
     }
-
+ 
     /* ========================================
        CONTENT
        ======================================== */
@@ -208,7 +225,7 @@ import { ProductBadgeComponent } from './product-badge.component';
       min-height: 0;
       overflow: hidden;
     }
-
+ 
     .card__title {
       margin: 0 0 6px;
       font-size: 15.5px;
@@ -223,11 +240,11 @@ import { ProductBadgeComponent } from './product-badge.component';
       overflow-wrap: break-word;
       word-break: break-word;
     }
-
+ 
     .card--certified .card__title {
       color: #14532d;
     }
-
+ 
     .card__description {
       margin: 0 0 12px;
       font-size: 12.5px;
@@ -242,7 +259,13 @@ import { ProductBadgeComponent } from './product-badge.component';
       flex: 1;
       min-height: 0;
     }
-
+ 
+    /* ── SP21 Badge ── */
+    .card__sp21 {
+      flex-shrink: 0;
+      margin-bottom: 8px;
+    }
+ 
     /* ── Dates ── */
     .card__dates {
       display: flex;
@@ -251,26 +274,26 @@ import { ProductBadgeComponent } from './product-badge.component';
       flex-shrink: 0;
       margin-top: auto;
     }
-
+ 
     .card__date {
       display: flex;
       align-items: center;
       gap: 4px;
     }
-
+ 
     .card__date-icon {
       font-size: 13px;
       width: 13px;
       height: 13px;
       color: #b0b0c0;
     }
-
+ 
     .card__date-text {
       font-size: 11px;
       color: #8c8c9b;
       font-weight: 480;
     }
-
+ 
     /* ========================================
        FOOTER
        ======================================== */
@@ -282,16 +305,19 @@ import { ProductBadgeComponent } from './product-badge.component';
       border-top: 1px solid rgba(0, 0, 0, 0.05);
       flex-shrink: 0;
     }
-
+ 
     .card__owner {
       display: flex;
       align-items: center;
       gap: 8px;
+      min-width: 0;
     }
-
+ 
     .card__avatar {
       width: 28px;
       height: 28px;
+      min-width: 28px;
+      min-height: 28px;
       border-radius: 50%;
       background: linear-gradient(135deg, #3a3a5c, #5a5a7e);
       display: inline-flex;
@@ -302,32 +328,37 @@ import { ProductBadgeComponent } from './product-badge.component';
       font-weight: 700;
       flex-shrink: 0;
     }
-
+ 
     .card__owner-info {
       display: flex;
       flex-direction: column;
+      min-width: 0;
     }
-
+ 
     .card__owner-name {
       font-size: 12.5px;
       font-weight: 580;
       color: #3a3a52;
-      line-height: 1.2;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 180px;
     }
-
+ 
     .card__owner-role {
       font-size: 10.5px;
       color: #a0a0b0;
       font-weight: 450;
     }
-
+ 
     .card__dialog-btn {
       --mdc-icon-button-state-layer-size: 32px;
       --mdc-icon-button-icon-size: 18px;
       color: #8c8c9b;
       opacity: 0;
       transition: opacity 0.2s ease, background 0.15s ease;
-
+ 
       &:hover {
         background: rgba(0, 0, 0, 0.04);
       }
@@ -336,15 +367,32 @@ import { ProductBadgeComponent } from './product-badge.component';
 })
 export class ProductCardComponent {
   private utilService = inject(ProductUtilService);
-
+ 
   product = input.required<Product>();
   selected = output<Product>();
   openInDialog = output<Product>();
-
+  openCertStatus = output<Product>();
+ 
   initials = computed(() => this.utilService.getOwnerInitials(this.product().owner));
-
+ 
+  private readonly sp21Map: Record<string, BadgeVariant> = {
+    Public: 'sp21-public',
+    Internal: 'sp21-internal',
+    Confidential: 'sp21-confidential',
+    'Highly Confidential': 'sp21-highly-confidential',
+  };
+ 
+  sp21Variant = computed<BadgeVariant>(() =>
+    this.sp21Map[this.product().sp21Classification] ?? 'sp21-internal'
+  );
+ 
   onOpenDialog(event: MouseEvent): void {
     event.stopPropagation();
     this.openInDialog.emit(this.product());
+  }
+ 
+  onCertBadgeClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.openCertStatus.emit(this.product());
   }
 }
