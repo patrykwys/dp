@@ -1,0 +1,90 @@
+@Test
+    void shouldDeleteOrphanedAndExcludedReportsFromEs() {
+        // ES has 5 reports: 1,2,3 exist in DB (non-excluded), 4,5 do not
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenReturn(List.of("1", "2", "3", "4", "5"));
+        when(reportRepository.findExistingNonExcludedIds(List.of(1L, 2L, 3L, 4L, 5L)))
+            .thenReturn(List.of(1L, 2L, 3L));
+ 
+        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+ 
+        verify(elasticSearchService).bulkDeleteFromElasticSearch(List.of("4", "5"));
+    }
+ 
+    @Test
+    void shouldNotDeleteWhenAllEsReportsExistInDb() {
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenReturn(List.of("1", "2", "3"));
+        when(reportRepository.findExistingNonExcludedIds(List.of(1L, 2L, 3L)))
+            .thenReturn(List.of(1L, 2L, 3L));
+ 
+        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+ 
+        verify(elasticSearchService, never()).bulkDeleteFromElasticSearch(anyList());
+    }
+ 
+    @Test
+    void shouldDeleteAllWhenNoneExistInDb() {
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenReturn(List.of("10", "20", "30"));
+        when(reportRepository.findExistingNonExcludedIds(List.of(10L, 20L, 30L)))
+            .thenReturn(List.of());
+ 
+        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+ 
+        verify(elasticSearchService).bulkDeleteFromElasticSearch(List.of("10", "20", "30"));
+    }
+ 
+    @Test
+    void shouldReturnEarlyWhenEsIsEmpty() {
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenReturn(List.of());
+ 
+        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+ 
+        verify(reportRepository, never()).findExistingNonExcludedIds(anyList());
+        verify(elasticSearchService, never()).bulkDeleteFromElasticSearch(anyList());
+    }
+ 
+    @Test
+    void shouldSkipNonNumericEsIds() {
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenReturn(List.of("1", "abc", "2", "xyz", "3"));
+        when(reportRepository.findExistingNonExcludedIds(List.of(1L, 2L, 3L)))
+            .thenReturn(List.of(1L));
+ 
+        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+ 
+        verify(elasticSearchService).bulkDeleteFromElasticSearch(List.of("2", "3"));
+    }
+ 
+    @Test
+    void shouldHandleEsServiceException() {
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenThrow(new RuntimeException("ES connection failed"));
+ 
+        assertDoesNotThrow(() -> cleanupReportsService.cleanupOrphanedElasticSearchReports());
+ 
+        verify(reportRepository, never()).findExistingNonExcludedIds(anyList());
+        verify(elasticSearchService, never()).bulkDeleteFromElasticSearch(anyList());
+    }
+ 
+    @Test
+    void shouldBatchLargeIdLists() {
+        // Generate 1200 IDs to verify batching at 500
+        List<String> esIds = new ArrayList<>();
+        for (long i = 1; i <= 1200; i++) {
+            esIds.add(String.valueOf(i));
+        }
+ 
+        when(elasticSearchService.getAllReportIdsFromElasticSearch())
+            .thenReturn(esIds);
+        when(reportRepository.findExistingNonExcludedIds(anyList()))
+            .thenReturn(List.of());
+ 
+        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+ 
+        // 1200 IDs at batch size 500 = 3 DB calls
+        verify(reportRepository, times(3)).findExistingNonExcludedIds(anyList());
+        verify(elasticSearchService).bulkDeleteFromElasticSearch(argThat(ids -> ids.size() == 1200));
+    }
