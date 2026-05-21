@@ -1,90 +1,127 @@
-@Test
-    void shouldDeleteOrphanedAndExcludedReportsFromEs() {
-        // ES has 5 reports: 1,2,3 exist in DB (non-excluded), 4,5 do not
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenReturn(List.of("1", "2", "3", "4", "5"));
-        when(reportRepository.findExistingNonExcludedIds(List.of(1L, 2L, 3L, 4L, 5L)))
-            .thenReturn(List.of(1L, 2L, 3L));
  
-        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+    @Test
+    void shouldReturnTrueWhenDeletedAndFalseWhenNotFound() throws IOException {
+        DeleteResponse deleted = mock(DeleteResponse.class);
+        when(deleted.result()).thenReturn(Result.Deleted);
  
-        verify(elasticSearchService).bulkDeleteFromElasticSearch(List.of("4", "5"));
+        DeleteResponse notFound = mock(DeleteResponse.class);
+        when(notFound.result()).thenReturn(Result.NotFound);
+ 
+        when(elasticSearchClient.delete(any(Function.class)))
+            .thenReturn(deleted, notFound);
+ 
+        assertTrue(elasticSearchService.deleteReportFromElasticSearch("1"));
+        assertFalse(elasticSearchService.deleteReportFromElasticSearch("999"));
     }
  
     @Test
-    void shouldNotDeleteWhenAllEsReportsExistInDb() {
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenReturn(List.of("1", "2", "3"));
-        when(reportRepository.findExistingNonExcludedIds(List.of(1L, 2L, 3L)))
-            .thenReturn(List.of(1L, 2L, 3L));
+    void shouldWrapIOExceptionOnDelete() throws IOException {
+        when(elasticSearchClient.delete(any(Function.class)))
+            .thenThrow(new IOException("connection refused"));
  
-        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+        UncheckedIOException exception = assertThrows(
+            UncheckedIOException.class,
+            () -> elasticSearchService.deleteReportFromElasticSearch("1")
+        );
+        assertTrue(exception.getMessage().contains("1"));
+    }
  
-        verify(elasticSearchService, never()).bulkDeleteFromElasticSearch(anyList());
+    // ── bulkDeleteFromElasticSearch ──
+ 
+    @Test
+    void shouldBulkDeleteAndHandlePartialFailures() throws IOException {
+        BulkResponseItem successItem = mock(BulkResponseItem.class);
+        when(successItem.error()).thenReturn(null);
+ 
+        ErrorCause errorCause = mock(ErrorCause.class);
+        when(errorCause.reason()).thenReturn("document missing");
+        BulkResponseItem failedItem = mock(BulkResponseItem.class);
+        when(failedItem.error()).thenReturn(errorCause);
+        when(failedItem.id()).thenReturn("2");
+ 
+        BulkResponse bulkResponse = mock(BulkResponse.class);
+        when(bulkResponse.errors()).thenReturn(true);
+        when(bulkResponse.items()).thenReturn(List.of(successItem, failedItem));
+        when(elasticSearchClient.bulk(any(BulkRequest.class))).thenReturn(bulkResponse);
+ 
+        // Empty list skips ES entirely
+        elasticSearchService.bulkDeleteFromElasticSearch(List.of());
+        verify(elasticSearchClient, never()).bulk(any(BulkRequest.class));
+ 
+        // Partial failures are logged but don't throw
+        assertDoesNotThrow(
+            () -> elasticSearchService.bulkDeleteFromElasticSearch(List.of("1", "2"))
+        );
     }
  
     @Test
-    void shouldDeleteAllWhenNoneExistInDb() {
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenReturn(List.of("10", "20", "30"));
-        when(reportRepository.findExistingNonExcludedIds(List.of(10L, 20L, 30L)))
-            .thenReturn(List.of());
+    void shouldWrapIOExceptionOnBulkDelete() throws IOException {
+        when(elasticSearchClient.bulk(any(BulkRequest.class)))
+            .thenThrow(new IOException("connection refused"));
  
-        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+        assertThrows(
+            UncheckedIOException.class,
+            () -> elasticSearchService.bulkDeleteFromElasticSearch(List.of("1"))
+        );
+    }
  
-        verify(elasticSearchService).bulkDeleteFromElasticSearch(List.of("10", "20", "30"));
+    // ── getAllReportIdsFromElasticSearch ──
+ 
+    @Test
+    void shouldCollectIdsAcrossScrollPages() throws IOException {
+        Hit<Void> hit1 = mock(Hit.class);
+        when(hit1.id()).thenReturn("1");
+        Hit<Void> hit2 = mock(Hit.class);
+        when(hit2.id()).thenReturn("2");
+        Hit<Void> hit3 = mock(Hit.class);
+        when(hit3.id()).thenReturn("3");
+ 
+        HitsMetadata<Void> initialHits = mock(HitsMetadata.class);
+        when(initialHits.hits()).thenReturn(List.of(hit1, hit2));
+        SearchResponse<Void> searchResponse = mock(SearchResponse.class);
+        when(searchResponse.hits()).thenReturn(initialHits);
+        when(searchResponse.scrollId()).thenReturn("scroll_1");
+        when(elasticSearchClient.search(any(Function.class), eq(Void.class)))
+            .thenReturn(searchResponse);
+ 
+        HitsMetadata<Void> scrollHits = mock(HitsMetadata.class);
+        when(scrollHits.hits()).thenReturn(List.of(hit3));
+        ScrollResponse<Void> scrollResponse1 = mock(ScrollResponse.class);
+        when(scrollResponse1.hits()).thenReturn(scrollHits);
+        when(scrollResponse1.scrollId()).thenReturn("scroll_2");
+ 
+        HitsMetadata<Void> emptyHits = mock(HitsMetadata.class);
+        when(emptyHits.hits()).thenReturn(List.of());
+        ScrollResponse<Void> scrollResponse2 = mock(ScrollResponse.class);
+        when(scrollResponse2.hits()).thenReturn(emptyHits);
+        when(scrollResponse2.scrollId()).thenReturn("scroll_3");
+ 
+        when(elasticSearchClient.scroll(any(Function.class), eq(Void.class)))
+            .thenReturn(scrollResponse1, scrollResponse2);
+ 
+        List<String> result = elasticSearchService.getAllReportIdsFromElasticSearch();
+ 
+        assertEquals(List.of("1", "2", "3"), result);
+        verify(elasticSearchClient).clearScroll(any(Function.class));
     }
  
     @Test
-    void shouldReturnEarlyWhenEsIsEmpty() {
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenReturn(List.of());
+    void shouldClearScrollContextEvenOnFailure() throws IOException {
+        HitsMetadata<Void> initialHits = mock(HitsMetadata.class);
+        when(initialHits.hits()).thenReturn(List.of());
+        SearchResponse<Void> searchResponse = mock(SearchResponse.class);
+        when(searchResponse.hits()).thenReturn(initialHits);
+        when(searchResponse.scrollId()).thenReturn("scroll_1");
+        when(elasticSearchClient.search(any(Function.class), eq(Void.class)))
+            .thenReturn(searchResponse);
  
-        cleanupReportsService.cleanupOrphanedElasticSearchReports();
+        when(elasticSearchClient.scroll(any(Function.class), eq(Void.class)))
+            .thenThrow(new IOException("scroll failed"));
  
-        verify(reportRepository, never()).findExistingNonExcludedIds(anyList());
-        verify(elasticSearchService, never()).bulkDeleteFromElasticSearch(anyList());
-    }
+        assertThrows(
+            UncheckedIOException.class,
+            () -> elasticSearchService.getAllReportIdsFromElasticSearch()
+        );
  
-    @Test
-    void shouldSkipNonNumericEsIds() {
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenReturn(List.of("1", "abc", "2", "xyz", "3"));
-        when(reportRepository.findExistingNonExcludedIds(List.of(1L, 2L, 3L)))
-            .thenReturn(List.of(1L));
- 
-        cleanupReportsService.cleanupOrphanedElasticSearchReports();
- 
-        verify(elasticSearchService).bulkDeleteFromElasticSearch(List.of("2", "3"));
-    }
- 
-    @Test
-    void shouldHandleEsServiceException() {
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenThrow(new RuntimeException("ES connection failed"));
- 
-        assertDoesNotThrow(() -> cleanupReportsService.cleanupOrphanedElasticSearchReports());
- 
-        verify(reportRepository, never()).findExistingNonExcludedIds(anyList());
-        verify(elasticSearchService, never()).bulkDeleteFromElasticSearch(anyList());
-    }
- 
-    @Test
-    void shouldBatchLargeIdLists() {
-        // Generate 1200 IDs to verify batching at 500
-        List<String> esIds = new ArrayList<>();
-        for (long i = 1; i <= 1200; i++) {
-            esIds.add(String.valueOf(i));
-        }
- 
-        when(elasticSearchService.getAllReportIdsFromElasticSearch())
-            .thenReturn(esIds);
-        when(reportRepository.findExistingNonExcludedIds(anyList()))
-            .thenReturn(List.of());
- 
-        cleanupReportsService.cleanupOrphanedElasticSearchReports();
- 
-        // 1200 IDs at batch size 500 = 3 DB calls
-        verify(reportRepository, times(3)).findExistingNonExcludedIds(anyList());
-        verify(elasticSearchService).bulkDeleteFromElasticSearch(argThat(ids -> ids.size() == 1200));
+        verify(elasticSearchClient).clearScroll(any(Function.class));
     }
